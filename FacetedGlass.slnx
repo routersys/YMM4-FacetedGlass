@@ -6,4 +6,5 @@
   <Project Path="FacetedGlass/FacetedGlass.csproj">
     <Platform Solution="*|x64" Project="x64" />
   </Project>
+  <Project Path="YukkuriMovieMaker.Generator/YukkuriMovieMaker.Generator/YukkuriMovieMaker.Generator.csproj" />
 </Solution>
