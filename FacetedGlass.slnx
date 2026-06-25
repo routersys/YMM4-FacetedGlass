@@ -3,6 +3,7 @@
     <Platform Name="Any CPU" />
     <Platform Name="x64" />
   </Configurations>
+  <Project Path="FacetedGlass.Tests/FacetedGlass.Tests.csproj" />
   <Project Path="FacetedGlass/FacetedGlass.csproj">
     <Platform Solution="*|x64" Project="x64" />
   </Project>
