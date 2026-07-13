@@ -27,12 +27,15 @@ namespace FacetedGlass
             var parameters = new Parameters(
                 (float)(_item.Amount.GetValue(frame, length, fps) / 100.0),
                 (float)_item.CellSize.GetValue(frame, length, fps),
+                (float)(_item.Irregularity.GetValue(frame, length, fps) / 100.0),
                 (float)(_item.Relief.GetValue(frame, length, fps) / 100.0),
                 (float)_item.Rotation.GetValue(frame, length, fps),
+                (float)(_item.Evolution.GetValue(frame, length, fps) * Math.PI / 180.0),
                 (float)_item.Refraction.GetValue(frame, length, fps),
                 (float)_item.RefractiveIndex.GetValue(frame, length, fps),
                 (float)(_item.Dispersion.GetValue(frame, length, fps) / 100.0),
                 (float)(_item.Reflection.GetValue(frame, length, fps) / 100.0),
+                (float)(_item.Glint.GetValue(frame, length, fps) / 100.0),
                 (float)_item.BorderWidth.GetValue(frame, length, fps),
                 (float)_item.LightAngle.GetValue(frame, length, fps),
                 (float)_item.LightElevation.GetValue(frame, length, fps),
@@ -42,10 +45,14 @@ namespace FacetedGlass
                 _effect.Amount = parameters.Amount;
             if (_isFirst || _parameters.CellSize != parameters.CellSize)
                 _effect.CellSize = parameters.CellSize;
+            if (_isFirst || _parameters.Irregularity != parameters.Irregularity)
+                _effect.Irregularity = parameters.Irregularity;
             if (_isFirst || _parameters.Relief != parameters.Relief)
                 _effect.Relief = parameters.Relief;
             if (_isFirst || _parameters.Rotation != parameters.Rotation)
                 _effect.Rotation = parameters.Rotation;
+            if (_isFirst || _parameters.Evolution != parameters.Evolution)
+                _effect.Evolution = parameters.Evolution;
             if (_isFirst || _parameters.Refraction != parameters.Refraction)
                 _effect.Refraction = parameters.Refraction;
             if (_isFirst || _parameters.RefractiveIndex != parameters.RefractiveIndex)
@@ -54,6 +61,8 @@ namespace FacetedGlass
                 _effect.Dispersion = parameters.Dispersion;
             if (_isFirst || _parameters.Reflection != parameters.Reflection)
                 _effect.Reflection = parameters.Reflection;
+            if (_isFirst || _parameters.Glint != parameters.Glint)
+                _effect.Glint = parameters.Glint;
             if (_isFirst || _parameters.BorderWidth != parameters.BorderWidth)
                 _effect.BorderWidth = parameters.BorderWidth;
             if (_isFirst || _parameters.LightAngle != parameters.LightAngle)
@@ -99,12 +108,15 @@ namespace FacetedGlass
         private readonly record struct Parameters(
             float Amount,
             float CellSize,
+            float Irregularity,
             float Relief,
             float Rotation,
+            float Evolution,
             float Refraction,
             float RefractiveIndex,
             float Dispersion,
             float Reflection,
+            float Glint,
             float BorderWidth,
             float LightAngle,
             float LightElevation,

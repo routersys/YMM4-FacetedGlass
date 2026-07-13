@@ -18,8 +18,12 @@ namespace FacetedGlass
         public Animation Amount { get; } = new Animation(100, 0, 100);
 
         [Display(GroupName = nameof(Texts.GeometryGroup), Name = nameof(Texts.CellSize), Description = nameof(Texts.CellSizeDescription), Order = 10, ResourceType = typeof(Texts))]
-        [AnimationSlider("F1", "px", 4, 300)]
-        public Animation CellSize { get; } = new Animation(72, 4, 1000);
+        [AnimationSlider("F1", "px", 8, 300)]
+        public Animation CellSize { get; } = new Animation(72, 8, 1000);
+
+        [Display(GroupName = nameof(Texts.GeometryGroup), Name = nameof(Texts.Irregularity), Description = nameof(Texts.IrregularityDescription), Order = 11, ResourceType = typeof(Texts))]
+        [AnimationSlider("F1", "%", 0, 100)]
+        public Animation Irregularity { get; } = new Animation(65, 0, 100);
 
         [Display(GroupName = nameof(Texts.GeometryGroup), Name = nameof(Texts.Relief), Description = nameof(Texts.ReliefDescription), Order = 12, ResourceType = typeof(Texts))]
         [AnimationSlider("F1", "%", 0, 200)]
@@ -28,6 +32,10 @@ namespace FacetedGlass
         [Display(GroupName = nameof(Texts.GeometryGroup), Name = nameof(Texts.Rotation), Description = nameof(Texts.RotationDescription), Order = 13, ResourceType = typeof(Texts))]
         [AnimationSlider("F1", "°", -180, 180)]
         public Animation Rotation { get; } = new Animation(0, -180, 180);
+
+        [Display(GroupName = nameof(Texts.GeometryGroup), Name = nameof(Texts.Evolution), Description = nameof(Texts.EvolutionDescription), Order = 14, ResourceType = typeof(Texts))]
+        [AnimationSlider("F1", "°", 0, 360)]
+        public Animation Evolution { get; } = new Animation(0, -36000, 36000);
 
         [Display(GroupName = nameof(Texts.GeometryGroup), Name = nameof(Texts.Seed), Description = nameof(Texts.SeedDescription), Order = 15, ResourceType = typeof(Texts))]
         [Range(0, int.MaxValue)]
@@ -56,6 +64,10 @@ namespace FacetedGlass
         [AnimationSlider("F1", "%", 0, 200)]
         public Animation Reflection { get; } = new Animation(55, 0, 200);
 
+        [Display(GroupName = nameof(Texts.AppearanceGroup), Name = nameof(Texts.Glint), Description = nameof(Texts.GlintDescription), Order = 31, ResourceType = typeof(Texts))]
+        [AnimationSlider("F1", "%", 0, 200)]
+        public Animation Glint { get; } = new Animation(40, 0, 200);
+
         [Display(GroupName = nameof(Texts.AppearanceGroup), Name = nameof(Texts.BorderWidth), Description = nameof(Texts.BorderWidthDescription), Order = 32, ResourceType = typeof(Texts))]
         [AnimationSlider("F1", "px", 0, 10)]
         public Animation BorderWidth { get; } = new Animation(1, 0, 32);
@@ -78,6 +90,6 @@ namespace FacetedGlass
             => new FacetedGlassEffectProcessor(devices, this);
 
         protected override IEnumerable<IAnimatable> GetAnimatables()
-            => _animatables ??= [Amount, CellSize, Relief, Rotation, Refraction, RefractiveIndex, Dispersion, Reflection, BorderWidth, LightAngle, LightElevation];
+            => _animatables ??= [Amount, CellSize, Irregularity, Relief, Rotation, Evolution, Refraction, RefractiveIndex, Dispersion, Reflection, Glint, BorderWidth, LightAngle, LightElevation];
     }
 }
