@@ -1,8 +1,10 @@
 using YukkuriMovieMaker.Generator;
 
-namespace FacetedGlass;
-
-[AutoGenLocalizer]
-partial class Texts
+namespace FacetedGlass
 {
+    [AutoGenLocalizer]
+    partial class Texts
+    {
+
+    }
 }

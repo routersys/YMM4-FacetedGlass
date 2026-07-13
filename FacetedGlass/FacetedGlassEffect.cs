@@ -6,67 +6,78 @@ using YukkuriMovieMaker.Exo;
 using YukkuriMovieMaker.Player.Video;
 using YukkuriMovieMaker.Plugin.Effects;
 
-namespace FacetedGlass;
-
-[VideoEffect(nameof(Texts.EffectName), [VideoEffectCategories.Filtering, VideoEffectCategories.Decoration], [nameof(Texts.TagGlass), nameof(Texts.TagPrism), nameof(Texts.TagRefraction), nameof(Texts.TagFacet)], IsAviUtlSupported = false, ResourceType = typeof(Texts))]
-public sealed class FacetedGlassEffect : VideoEffectBase
+namespace FacetedGlass
 {
-    public override string Label => Texts.EffectName;
+    [VideoEffect(nameof(Texts.FacetedGlass), [VideoEffectCategories.Filtering, VideoEffectCategories.Decoration], [nameof(Texts.TagGlass), nameof(Texts.TagPrism), nameof(Texts.TagRefraction), nameof(Texts.TagFacet)], IsAviUtlSupported = false, ResourceType = typeof(Texts))]
+    public sealed class FacetedGlassEffect : VideoEffectBase
+    {
+        public override string Label => Texts.FacetedGlass;
 
-    [Display(GroupName = nameof(Texts.BasicGroup), Name = nameof(Texts.AmountName), Description = nameof(Texts.AmountDesc), Order = 0, ResourceType = typeof(Texts))]
-    [AnimationSlider("F1", "%", 0d, 100d)]
-    public Animation Amount { get; } = new(100, 0, 100);
+        [Display(GroupName = nameof(Texts.BasicGroup), Name = nameof(Texts.Amount), Description = nameof(Texts.AmountDescription), Order = 0, ResourceType = typeof(Texts))]
+        [AnimationSlider("F1", "%", 0, 100)]
+        public Animation Amount { get; } = new Animation(100, 0, 100);
 
-    [Display(GroupName = nameof(Texts.GeometryGroup), Name = nameof(Texts.CellSizeName), Description = nameof(Texts.CellSizeDesc), Order = 10, ResourceType = typeof(Texts))]
-    [AnimationSlider("F1", "px", 4d, 300d)]
-    public Animation CellSize { get; } = new(72, 4, 1000);
+        [Display(GroupName = nameof(Texts.GeometryGroup), Name = nameof(Texts.CellSize), Description = nameof(Texts.CellSizeDescription), Order = 10, ResourceType = typeof(Texts))]
+        [AnimationSlider("F1", "px", 4, 300)]
+        public Animation CellSize { get; } = new Animation(72, 4, 1000);
 
-    [Display(GroupName = nameof(Texts.GeometryGroup), Name = nameof(Texts.ReliefName), Description = nameof(Texts.ReliefDesc), Order = 11, ResourceType = typeof(Texts))]
-    [AnimationSlider("F1", "%", 0d, 200d)]
-    public Animation Relief { get; } = new(55, 0, 200);
+        [Display(GroupName = nameof(Texts.GeometryGroup), Name = nameof(Texts.Relief), Description = nameof(Texts.ReliefDescription), Order = 12, ResourceType = typeof(Texts))]
+        [AnimationSlider("F1", "%", 0, 200)]
+        public Animation Relief { get; } = new Animation(55, 0, 200);
 
-    [Display(GroupName = nameof(Texts.GeometryGroup), Name = nameof(Texts.RotationName), Description = nameof(Texts.RotationDesc), Order = 12, ResourceType = typeof(Texts))]
-    [AnimationSlider("F1", "°", -180d, 180d)]
-    public Animation Rotation { get; } = new(0, -180, 180);
+        [Display(GroupName = nameof(Texts.GeometryGroup), Name = nameof(Texts.Rotation), Description = nameof(Texts.RotationDescription), Order = 13, ResourceType = typeof(Texts))]
+        [AnimationSlider("F1", "°", -180, 180)]
+        public Animation Rotation { get; } = new Animation(0, -180, 180);
 
-    [Display(GroupName = nameof(Texts.GeometryGroup), Name = nameof(Texts.SeedName), Description = nameof(Texts.SeedDesc), Order = 13, ResourceType = typeof(Texts))]
-    [Range(0, 2147483647)]
-    [DefaultValue(0)]
-    [TextBoxSlider("F0", "", 0, 10000)]
-    public int Seed { get => seed; set => Set(ref seed, Math.Max(value, 0)); }
-    int seed;
+        [Display(GroupName = nameof(Texts.GeometryGroup), Name = nameof(Texts.Seed), Description = nameof(Texts.SeedDescription), Order = 15, ResourceType = typeof(Texts))]
+        [Range(0, int.MaxValue)]
+        [DefaultValue(0)]
+        [TextBoxSlider("F0", "", 0, 10000)]
+        public int Seed
+        {
+            get => _seed;
+            set => Set(ref _seed, Math.Max(value, 0));
+        }
+        private int _seed;
 
-    [Display(GroupName = nameof(Texts.OpticsGroup), Name = nameof(Texts.RefractionName), Description = nameof(Texts.RefractionDesc), Order = 20, ResourceType = typeof(Texts))]
-    [AnimationSlider("F1", "px", 0d, 100d)]
-    public Animation Refraction { get; } = new(18, 0, 512);
+        [Display(GroupName = nameof(Texts.OpticsGroup), Name = nameof(Texts.Refraction), Description = nameof(Texts.RefractionDescription), Order = 20, ResourceType = typeof(Texts))]
+        [AnimationSlider("F1", "px", 0, 100)]
+        public Animation Refraction { get; } = new Animation(18, 0, 512);
 
-    [Display(GroupName = nameof(Texts.OpticsGroup), Name = nameof(Texts.RefractiveIndexName), Description = nameof(Texts.RefractiveIndexDesc), Order = 21, ResourceType = typeof(Texts))]
-    [AnimationSlider("F2", "", 1d, 2.5d)]
-    public Animation RefractiveIndex { get; } = new(1.5, 1, 2.5);
+        [Display(GroupName = nameof(Texts.OpticsGroup), Name = nameof(Texts.RefractiveIndex), Description = nameof(Texts.RefractiveIndexDescription), Order = 21, ResourceType = typeof(Texts))]
+        [AnimationSlider("F2", "", 1, 2.5)]
+        public Animation RefractiveIndex { get; } = new Animation(1.5, 1, 2.5);
 
-    [Display(GroupName = nameof(Texts.OpticsGroup), Name = nameof(Texts.DispersionName), Description = nameof(Texts.DispersionDesc), Order = 22, ResourceType = typeof(Texts))]
-    [AnimationSlider("F1", "%", 0d, 100d)]
-    public Animation Dispersion { get; } = new(35, 0, 100);
+        [Display(GroupName = nameof(Texts.OpticsGroup), Name = nameof(Texts.Dispersion), Description = nameof(Texts.DispersionDescription), Order = 22, ResourceType = typeof(Texts))]
+        [AnimationSlider("F1", "%", 0, 100)]
+        public Animation Dispersion { get; } = new Animation(35, 0, 100);
 
-    [Display(GroupName = nameof(Texts.AppearanceGroup), Name = nameof(Texts.ReflectionName), Description = nameof(Texts.ReflectionDesc), Order = 30, ResourceType = typeof(Texts))]
-    [AnimationSlider("F1", "%", 0d, 200d)]
-    public Animation Reflection { get; } = new(55, 0, 200);
+        [Display(GroupName = nameof(Texts.AppearanceGroup), Name = nameof(Texts.Reflection), Description = nameof(Texts.ReflectionDescription), Order = 30, ResourceType = typeof(Texts))]
+        [AnimationSlider("F1", "%", 0, 200)]
+        public Animation Reflection { get; } = new Animation(55, 0, 200);
 
-    [Display(GroupName = nameof(Texts.AppearanceGroup), Name = nameof(Texts.BorderWidthName), Description = nameof(Texts.BorderWidthDesc), Order = 31, ResourceType = typeof(Texts))]
-    [AnimationSlider("F1", "px", 0d, 10d)]
-    public Animation BorderWidth { get; } = new(1, 0, 32);
+        [Display(GroupName = nameof(Texts.AppearanceGroup), Name = nameof(Texts.BorderWidth), Description = nameof(Texts.BorderWidthDescription), Order = 32, ResourceType = typeof(Texts))]
+        [AnimationSlider("F1", "px", 0, 10)]
+        public Animation BorderWidth { get; } = new Animation(1, 0, 32);
 
-    [Display(GroupName = nameof(Texts.LightingGroup), Name = nameof(Texts.LightAngleName), Description = nameof(Texts.LightAngleDesc), Order = 40, ResourceType = typeof(Texts))]
-    [AnimationSlider("F1", "°", -180d, 180d)]
-    public Animation LightAngle { get; } = new(-35, -180, 180);
+        [Display(GroupName = nameof(Texts.LightingGroup), Name = nameof(Texts.LightAngle), Description = nameof(Texts.LightAngleDescription), Order = 40, ResourceType = typeof(Texts))]
+        [AnimationSlider("F1", "°", -180, 180)]
+        public Animation LightAngle { get; } = new Animation(-35, -180, 180);
 
-    [Display(GroupName = nameof(Texts.LightingGroup), Name = nameof(Texts.LightElevationName), Description = nameof(Texts.LightElevationDesc), Order = 41, ResourceType = typeof(Texts))]
-    [AnimationSlider("F1", "°", 1d, 89d)]
-    public Animation LightElevation { get; } = new(45, 1, 89);
+        [Display(GroupName = nameof(Texts.LightingGroup), Name = nameof(Texts.LightElevation), Description = nameof(Texts.LightElevationDescription), Order = 41, ResourceType = typeof(Texts))]
+        [AnimationSlider("F1", "°", 1, 89)]
+        public Animation LightElevation { get; } = new Animation(45, 1, 89);
 
-    public override IEnumerable<string> CreateExoVideoFilters(int keyFrameIndex, ExoOutputDescription exoOutputDescription) => [];
+        private IAnimatable[]? _animatables;
 
-    public override IVideoEffectProcessor CreateVideoEffect(IGraphicsDevicesAndContext devices) => new FacetedGlassEffectProcessor(devices, this);
+        public override IEnumerable<string> CreateExoVideoFilters(
+            int keyFrameIndex,
+            ExoOutputDescription exoOutputDescription) => [];
 
-    protected override IEnumerable<IAnimatable> GetAnimatables() => [Amount, CellSize, Relief, Rotation, Refraction, RefractiveIndex, Dispersion, Reflection, BorderWidth, LightAngle, LightElevation];
+        public override IVideoEffectProcessor CreateVideoEffect(IGraphicsDevicesAndContext devices)
+            => new FacetedGlassEffectProcessor(devices, this);
+
+        protected override IEnumerable<IAnimatable> GetAnimatables()
+            => _animatables ??= [Amount, CellSize, Relief, Rotation, Refraction, RefractiveIndex, Dispersion, Reflection, BorderWidth, LightAngle, LightElevation];
+    }
 }

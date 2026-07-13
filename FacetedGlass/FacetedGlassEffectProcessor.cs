@@ -2,98 +2,112 @@ using Vortice.Direct2D1;
 using YukkuriMovieMaker.Commons;
 using YukkuriMovieMaker.Player.Video;
 using YukkuriMovieMaker.Player.Video.Effects;
-using static FacetedGlass.ParameterNormalizer;
 
-namespace FacetedGlass;
-
-internal sealed class FacetedGlassEffectProcessor(IGraphicsDevicesAndContext devices, FacetedGlassEffect item) : VideoEffectProcessorBase(devices)
+namespace FacetedGlass
 {
-    readonly FacetedGlassEffect item = item;
-    FacetedGlassCustomEffect? effect;
-    Parameters parameters;
-    bool isFirst = true;
-
-    public override DrawDescription Update(EffectDescription effectDescription)
+    internal sealed class FacetedGlassEffectProcessor(
+        IGraphicsDevicesAndContext devices,
+        FacetedGlassEffect item) : VideoEffectProcessorBase(devices)
     {
-        if (IsPassThroughEffect || effect is null)
+        private readonly FacetedGlassEffect _item = item;
+        private FacetedGlassCustomEffect? _effect;
+
+        private bool _isFirst = true;
+        private Parameters _parameters;
+
+        public override DrawDescription Update(EffectDescription effectDescription)
+        {
+            if (IsPassThroughEffect || _effect is null)
+                return effectDescription.DrawDescription;
+
+            var frame = effectDescription.ItemPosition.Frame;
+            var length = effectDescription.ItemDuration.Frame;
+            var fps = effectDescription.FPS;
+
+            var parameters = new Parameters(
+                (float)(_item.Amount.GetValue(frame, length, fps) / 100.0),
+                (float)_item.CellSize.GetValue(frame, length, fps),
+                (float)(_item.Relief.GetValue(frame, length, fps) / 100.0),
+                (float)_item.Rotation.GetValue(frame, length, fps),
+                (float)_item.Refraction.GetValue(frame, length, fps),
+                (float)_item.RefractiveIndex.GetValue(frame, length, fps),
+                (float)(_item.Dispersion.GetValue(frame, length, fps) / 100.0),
+                (float)(_item.Reflection.GetValue(frame, length, fps) / 100.0),
+                (float)_item.BorderWidth.GetValue(frame, length, fps),
+                (float)_item.LightAngle.GetValue(frame, length, fps),
+                (float)_item.LightElevation.GetValue(frame, length, fps),
+                _item.Seed);
+
+            if (_isFirst || _parameters.Amount != parameters.Amount)
+                _effect.Amount = parameters.Amount;
+            if (_isFirst || _parameters.CellSize != parameters.CellSize)
+                _effect.CellSize = parameters.CellSize;
+            if (_isFirst || _parameters.Relief != parameters.Relief)
+                _effect.Relief = parameters.Relief;
+            if (_isFirst || _parameters.Rotation != parameters.Rotation)
+                _effect.Rotation = parameters.Rotation;
+            if (_isFirst || _parameters.Refraction != parameters.Refraction)
+                _effect.Refraction = parameters.Refraction;
+            if (_isFirst || _parameters.RefractiveIndex != parameters.RefractiveIndex)
+                _effect.RefractiveIndex = parameters.RefractiveIndex;
+            if (_isFirst || _parameters.Dispersion != parameters.Dispersion)
+                _effect.Dispersion = parameters.Dispersion;
+            if (_isFirst || _parameters.Reflection != parameters.Reflection)
+                _effect.Reflection = parameters.Reflection;
+            if (_isFirst || _parameters.BorderWidth != parameters.BorderWidth)
+                _effect.BorderWidth = parameters.BorderWidth;
+            if (_isFirst || _parameters.LightAngle != parameters.LightAngle)
+                _effect.LightAngle = parameters.LightAngle;
+            if (_isFirst || _parameters.LightElevation != parameters.LightElevation)
+                _effect.LightElevation = parameters.LightElevation;
+            if (_isFirst || _parameters.Seed != parameters.Seed)
+                _effect.Seed = parameters.Seed;
+
+            _parameters = parameters;
+            _isFirst = false;
+
             return effectDescription.DrawDescription;
-
-        var frame = effectDescription.ItemPosition.Frame;
-        var length = effectDescription.ItemDuration.Frame;
-        var fps = effectDescription.FPS;
-        var next = new Parameters(
-            Percent(item.Amount.GetValue(frame, length, fps), 0f, 1f, 1f),
-            Finite(item.CellSize.GetValue(frame, length, fps), 4f, 1000f, 72f),
-            Percent(item.Relief.GetValue(frame, length, fps), 0f, 2f, 0.55f),
-            Finite(item.Rotation.GetValue(frame, length, fps), -180f, 180f, 0f),
-            Finite(item.Refraction.GetValue(frame, length, fps), 0f, 512f, 18f),
-            Finite(item.RefractiveIndex.GetValue(frame, length, fps), 1f, 2.5f, 1.5f),
-            Percent(item.Dispersion.GetValue(frame, length, fps), 0f, 1f, 0.35f),
-            Percent(item.Reflection.GetValue(frame, length, fps), 0f, 2f, 0.55f),
-            Finite(item.BorderWidth.GetValue(frame, length, fps), 0f, 32f, 1f),
-            Finite(item.LightAngle.GetValue(frame, length, fps), -180f, 180f, -35f),
-            Finite(item.LightElevation.GetValue(frame, length, fps), 1f, 89f, 45f),
-            Math.Max(item.Seed, 0));
-
-        if (isFirst || parameters != next)
-        {
-            effect.Amount = next.Amount;
-            effect.CellSize = next.CellSize;
-            effect.Relief = next.Relief;
-            effect.Rotation = next.Rotation;
-            effect.Refraction = next.Refraction;
-            effect.RefractiveIndex = next.RefractiveIndex;
-            effect.Dispersion = next.Dispersion;
-            effect.Reflection = next.Reflection;
-            effect.BorderWidth = next.BorderWidth;
-            effect.LightAngle = next.LightAngle;
-            effect.LightElevation = next.LightElevation;
-            effect.Seed = next.Seed;
-            parameters = next;
-            isFirst = false;
         }
 
-        return effectDescription.DrawDescription;
-    }
-
-    protected override ID2D1Image? CreateEffect(IGraphicsDevicesAndContext devices)
-    {
-        effect = new FacetedGlassCustomEffect(devices);
-        if (!effect.IsEnabled)
+        protected override ID2D1Image? CreateEffect(IGraphicsDevicesAndContext devices)
         {
-            effect.Dispose();
-            effect = null;
-            return null;
+            _effect = new FacetedGlassCustomEffect(devices);
+            if (!_effect.IsEnabled)
+            {
+                _effect.Dispose();
+                _effect = null;
+                return null;
+            }
+            disposer.Collect(_effect);
+
+            var output = _effect.Output;
+            disposer.Collect(output);
+            return output;
         }
 
-        disposer.Collect(effect);
-        var output = effect.Output;
-        disposer.Collect(output);
-        return output;
-    }
+        protected override void setInput(ID2D1Image? input)
+        {
+            _effect?.SetInput(0, input, true);
+        }
 
-    protected override void setInput(ID2D1Image? input)
-    {
-        effect?.SetInput(0, input, true);
-    }
+        protected override void ClearEffectChain()
+        {
+            _effect?.SetInput(0, null, true);
+            _isFirst = true;
+        }
 
-    protected override void ClearEffectChain()
-    {
-        effect?.SetInput(0, null, true);
-        isFirst = true;
+        private readonly record struct Parameters(
+            float Amount,
+            float CellSize,
+            float Relief,
+            float Rotation,
+            float Refraction,
+            float RefractiveIndex,
+            float Dispersion,
+            float Reflection,
+            float BorderWidth,
+            float LightAngle,
+            float LightElevation,
+            int Seed);
     }
-
-    readonly record struct Parameters(
-        float Amount,
-        float CellSize,
-        float Relief,
-        float Rotation,
-        float Refraction,
-        float RefractiveIndex,
-        float Dispersion,
-        float Reflection,
-        float BorderWidth,
-        float LightAngle,
-        float LightElevation,
-        int Seed);
 }
