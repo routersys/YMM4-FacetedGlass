@@ -79,12 +79,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Compile Include="..\..\GitHubUpdateNotifier\GitHubUpdateNotifier\*.cs" LinkBase="GitHubUpdateNotifier" />
+		<Compile Include="..\GitHubUpdateNotifier\GitHubUpdateNotifier\*.cs" LinkBase="GitHubUpdateNotifier" />
 	</ItemGroup>
 
 	<Target Name="EnsureUpdateNotifierSources" BeforeTargets="CoreCompile">
 		<ItemGroup>
-			<_UpdateNotifierSources Include="..\..\GitHubUpdateNotifier\GitHubUpdateNotifier\*.cs" />
+			<_UpdateNotifierSources Include="..\GitHubUpdateNotifier\GitHubUpdateNotifier\*.cs" />
 		</ItemGroup>
 		<Error Condition="'@(_UpdateNotifierSources)' == ''" Text="GitHubUpdateNotifier のサブモジュールのソースが見つかりません。git submodule update --init --recursive を実行してください。" />
 	</Target>
