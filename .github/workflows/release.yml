@@ -17,20 +17,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: recursive
-          fetch-depth: 0
-
-      - name: サブモジュールの初期化と確認
-        shell: pwsh
-        run: |
-          git submodule sync --recursive
-          git submodule update --init --recursive --force
-          $entry = "GitHubUpdateNotifier/GitHubUpdateNotifier/GitHubUpdateNotifier.cs"
-          if (-not (Test-Path $entry)) {
-            Write-Error "サブモジュール GitHubUpdateNotifier のソースを取得できませんでした。パス: $entry"
-            exit 1
-          }
-          $count = (Get-ChildItem "GitHubUpdateNotifier/GitHubUpdateNotifier" -Filter *.cs).Count
-          Write-Host "GitHubUpdateNotifier のソースを確認しました。C# ファイル数: $count"
 
       - name: .NET SDK のセットアップ
         uses: actions/setup-dotnet@v4
