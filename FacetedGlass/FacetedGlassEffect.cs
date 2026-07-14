@@ -17,6 +17,11 @@ namespace FacetedGlass
         [AnimationSlider("F1", "%", 0, 100)]
         public Animation Amount { get; } = new Animation(100, 0, 100);
 
+        [Display(GroupName = nameof(Texts.GeometryGroup), Name = nameof(Texts.Mode), Description = nameof(Texts.ModeDescription), Order = 9, ResourceType = typeof(Texts))]
+        [EnumComboBox]
+        public FacetedGlassMode Mode { get => _mode; set => Set(ref _mode, value); }
+        private FacetedGlassMode _mode = FacetedGlassMode.Voronoi;
+
         [Display(GroupName = nameof(Texts.GeometryGroup), Name = nameof(Texts.CellSize), Description = nameof(Texts.CellSizeDescription), Order = 10, ResourceType = typeof(Texts))]
         [AnimationSlider("F1", "px", 8, 300)]
         public Animation CellSize { get; } = new Animation(72, 8, 1000);

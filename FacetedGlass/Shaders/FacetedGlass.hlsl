@@ -19,6 +19,7 @@ cbuffer Constants : register(b0)
     float lightAngle : packoffset(c4.x);
     float lightElevation : packoffset(c4.y);
     int seed : packoffset(c4.z);
+    int mode : packoffset(c4.w);
 };
 
 static const float Sqrt3 = 1.7320508075688772;
@@ -46,6 +47,14 @@ float CellHash(int2 cell, uint channel)
     return Hash32(value) / 4294967295.0;
 }
 
+float VertexHeight(int2 vertex)
+{
+    uint value = asuint(vertex.x) * 0x9e3779b9u;
+    value ^= asuint(vertex.y) * 0x85ebca6bu;
+    value ^= asuint(seed) * 0xc2b2ae35u;
+    return (Hash32(value) / 4294967295.0) * 2.0 - 1.0;
+}
+
 float2 Rotate(float2 coordinate, float angle)
 {
     float cosine = cos(angle);
@@ -68,6 +77,17 @@ float3 FacetNormal(int2 cell)
     float tilt = relief * 0.5 * breathing * (0.4 + 0.6 * CellHash(cell, 5u));
     float sine = sin(tilt);
     return float3(sine * cos(azimuth), sine * sin(azimuth), cos(tilt));
+}
+
+float2 LatticePoint(int2 vertex)
+{
+    return float2(vertex.x + 0.5 * vertex.y, 0.5 * Sqrt3 * vertex.y) * cellSize;
+}
+
+float EdgeDistance(float2 coordinate, float2 a, float2 b)
+{
+    float2 edge = b - a;
+    return abs(edge.x * (coordinate.y - a.y) - edge.y * (coordinate.x - a.x)) / max(length(edge), 1e-6);
 }
 
 float CauchyIndex(float wavelength)
@@ -107,19 +127,8 @@ float Schlick(float index, float cosine)
     return f0 + (1.0 - f0) * pow(1.0 - saturate(cosine), 5.0);
 }
 
-float4 main(
-    float4 position : SV_POSITION,
-    float4 scenePosition : SCENE_POSITION,
-    float4 uv0 : TEXCOORD0
-) : SV_TARGET
+void ResolveVoronoi(float2 local, out float3 normal, out float edgeDistance, out int2 facetCell)
 {
-    float4 source = SourceTexture.SampleLevel(SourceSampler, uv0.xy, 0);
-    if (amount <= 0.0 || source.a <= 0.0)
-        return source;
-
-    float2 center = 0.5 * (inputBounds.xy + inputBounds.zw);
-    float rotationRadians = radians(rotation);
-    float2 local = Rotate(scenePosition.xy - center, -rotationRadians);
     float latticeV = 2.0 * local.y / (Sqrt3 * cellSize);
     float latticeU = local.x / cellSize - 0.5 * latticeV;
     int2 baseCell = int2(floor(latticeU + 0.5), floor(latticeV + 0.5));
@@ -147,7 +156,7 @@ float4 main(
         }
     }
 
-    float edgeDistance = 1e8;
+    float edge = 1e8;
 
     [loop]
     for (int eu = -2; eu <= 2; eu++)
@@ -164,11 +173,81 @@ float4 main(
             if (lengthToSite < 1e-4)
                 continue;
             float distance = dot(local - 0.5 * (bestPoint + site), toSite / lengthToSite);
-            edgeDistance = min(edgeDistance, abs(distance));
+            edge = min(edge, abs(distance));
         }
     }
 
-    float3 normal = FacetNormal(bestCell);
+    normal = FacetNormal(bestCell);
+    edgeDistance = edge;
+    facetCell = bestCell;
+}
+
+void ResolveTriangle(float2 local, out float3 normal, out float edgeDistance, out int2 facetCell)
+{
+    float latticeV = 2.0 * local.y / (Sqrt3 * cellSize);
+    float latticeU = local.x / cellSize - 0.5 * latticeV;
+    int2 baseVertex = int2(floor(latticeU), floor(latticeV));
+    float2 fraction = frac(float2(latticeU, latticeV));
+
+    int2 vertex0;
+    int2 vertex1;
+    int2 vertex2;
+
+    if (fraction.x + fraction.y <= 1.0)
+    {
+        vertex0 = baseVertex;
+        vertex1 = baseVertex + int2(1, 0);
+        vertex2 = baseVertex + int2(0, 1);
+    }
+    else
+    {
+        vertex0 = baseVertex + int2(1, 1);
+        vertex1 = baseVertex + int2(0, 1);
+        vertex2 = baseVertex + int2(1, 0);
+    }
+
+    float2 point0 = LatticePoint(vertex0);
+    float2 point1 = LatticePoint(vertex1);
+    float2 point2 = LatticePoint(vertex2);
+    float heightScale = cellSize * relief * 0.35;
+    float3 surface0 = float3(point0, VertexHeight(vertex0) * heightScale);
+    float3 surface1 = float3(point1, VertexHeight(vertex1) * heightScale);
+    float3 surface2 = float3(point2, VertexHeight(vertex2) * heightScale);
+    float3 faceNormal = normalize(cross(surface1 - surface0, surface2 - surface0));
+    if (faceNormal.z < 0.0)
+        faceNormal = -faceNormal;
+
+    float distance0 = EdgeDistance(local, point0, point1);
+    float distance1 = EdgeDistance(local, point1, point2);
+    float distance2 = EdgeDistance(local, point2, point0);
+
+    normal = faceNormal;
+    edgeDistance = min(distance0, min(distance1, distance2));
+    facetCell = vertex0;
+}
+
+float4 main(
+    float4 position : SV_POSITION,
+    float4 scenePosition : SCENE_POSITION,
+    float4 uv0 : TEXCOORD0
+) : SV_TARGET
+{
+    float4 source = SourceTexture.SampleLevel(SourceSampler, uv0.xy, 0);
+    if (amount <= 0.0 || source.a <= 0.0)
+        return source;
+
+    float2 center = 0.5 * (inputBounds.xy + inputBounds.zw);
+    float rotationRadians = radians(rotation);
+    float2 local = Rotate(scenePosition.xy - center, -rotationRadians);
+
+    float3 normal;
+    float edgeDistance;
+    int2 facetCell;
+    if (mode == 1)
+        ResolveTriangle(local, normal, edgeDistance, facetCell);
+    else
+        ResolveVoronoi(local, normal, edgeDistance, facetCell);
+
     normal.xy = Rotate(normal.xy, rotationRadians);
 
     float indexR = CauchyIndex(610.0);
@@ -192,7 +271,7 @@ float4 main(
     float fresnel = Schlick(indexG, dot(normal, view));
     float mirrored = saturate(dot(reflect(-light, normal), view));
     float specular = pow(mirrored, 48.0);
-    float flicker = 0.5 + 0.5 * sin(evolution * 1.7 + TwoPi * CellHash(bestCell, 6u));
+    float flicker = 0.5 + 0.5 * sin(evolution * 1.7 + TwoPi * CellHash(facetCell, 6u));
     float sparkle = glint * pow(mirrored, 160.0) * (0.35 + 0.65 * flicker);
 
     float antialias = max(fwidth(edgeDistance), 0.5);

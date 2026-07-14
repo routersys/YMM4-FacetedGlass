@@ -26,6 +26,7 @@ namespace FacetedGlass
             LightAngle,
             LightElevation,
             Seed,
+            Mode,
         }
 
         public float Amount { set => SetValue((int)PropertyIndex.Amount, value); }
@@ -43,6 +44,7 @@ namespace FacetedGlass
         public float LightAngle { set => SetValue((int)PropertyIndex.LightAngle, value); }
         public float LightElevation { set => SetValue((int)PropertyIndex.LightElevation, value); }
         public int Seed { set => SetValue((int)PropertyIndex.Seed, value); }
+        public int Mode { set => SetValue((int)PropertyIndex.Mode, value); }
 
         [CustomEffect(1)]
         private sealed class EffectImpl : D2D1CustomShaderEffectImplBase<EffectImpl>
@@ -93,6 +95,9 @@ namespace FacetedGlass
 
             [CustomEffectProperty(PropertyType.Int32, (int)PropertyIndex.Seed)]
             public int Seed { get => _cb.Seed; set { _cb.Seed = value; UpdateConstants(); } }
+
+            [CustomEffectProperty(PropertyType.Int32, (int)PropertyIndex.Mode)]
+            public int Mode { get => _cb.Mode; set { _cb.Mode = Math.Clamp(value, 0, 1); UpdateConstants(); } }
 
             public EffectImpl() : base(ShaderResourceUri.Get("FacetedGlass")) { }
 
@@ -151,7 +156,7 @@ namespace FacetedGlass
                 public float LightAngle;
                 public float LightElevation;
                 public int Seed;
-                public float Pad0;
+                public int Mode;
             }
         }
     }

@@ -39,7 +39,8 @@ namespace FacetedGlass
                 (float)_item.BorderWidth.GetValue(frame, length, fps),
                 (float)_item.LightAngle.GetValue(frame, length, fps),
                 (float)_item.LightElevation.GetValue(frame, length, fps),
-                _item.Seed);
+                _item.Seed,
+                (int)_item.Mode);
 
             if (_isFirst || _parameters.Amount != parameters.Amount)
                 _effect.Amount = parameters.Amount;
@@ -71,6 +72,8 @@ namespace FacetedGlass
                 _effect.LightElevation = parameters.LightElevation;
             if (_isFirst || _parameters.Seed != parameters.Seed)
                 _effect.Seed = parameters.Seed;
+            if (_isFirst || _parameters.Mode != parameters.Mode)
+                _effect.Mode = parameters.Mode;
 
             _parameters = parameters;
             _isFirst = false;
@@ -120,6 +123,7 @@ namespace FacetedGlass
             float BorderWidth,
             float LightAngle,
             float LightElevation,
-            int Seed);
+            int Seed,
+            int Mode);
     }
 }

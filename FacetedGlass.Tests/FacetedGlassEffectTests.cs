@@ -33,6 +33,14 @@ public sealed class FacetedGlassEffectTests
         Assert.Equal(0, effect.Seed);
     }
 
+    [Fact]
+    public void Mode_DefaultsToVoronoi()
+    {
+        var effect = new FacetedGlassEffect();
+
+        Assert.Equal(FacetedGlassMode.Voronoi, effect.Mode);
+    }
+
     [Theory]
     [InlineData(-1, 0)]
     [InlineData(-2147483648, 0)]
