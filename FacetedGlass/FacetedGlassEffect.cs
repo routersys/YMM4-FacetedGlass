@@ -13,6 +13,11 @@ namespace FacetedGlass
     {
         public override string Label => Texts.FacetedGlass;
 
+        public FacetedGlassEffect()
+        {
+            FacetedGlassUpdateNotifier.EnsureCheckedOnce();
+        }
+
         [Display(GroupName = nameof(Texts.BasicGroup), Name = nameof(Texts.Amount), Description = nameof(Texts.AmountDescription), Order = 0, ResourceType = typeof(Texts))]
         [AnimationSlider("F1", "%", 0, 100)]
         public Animation Amount { get; } = new Animation(100, 0, 100);
